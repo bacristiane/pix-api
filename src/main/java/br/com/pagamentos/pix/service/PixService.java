@@ -3,112 +3,115 @@ package br.com.pagamentos.pix.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.time.LocalDate;
-import java.util.stream.Collectors;
-import org.modelmapper.ModelMapper;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import br.com.pagamentos.pix.components.QueueSender;
+import br.com.pagamentos.pix.exceptions.PixNotFoundException;
 import br.com.pagamentos.pix.model.Pix;
-import br.com.pagamentos.pix.model.PixDTO;
-import br.com.pagamentos.pix.model.StatusPix;
+import br.com.pagamentos.pix.model.constant.Status;
+import br.com.pagamentos.pix.model.dto.PixRequestDTO;
+import br.com.pagamentos.pix.model.dto.PixResponseDTO;
+import br.com.pagamentos.pix.model.dto.PixWrapperDTO;
+import br.com.pagamentos.pix.model.mapper.PixMapper;
 import br.com.pagamentos.pix.repository.PixRepository;
+import br.com.pagamentos.pix.utils.PixUtils;
 
 @Service
 public class PixService {
-
-    private static final Logger logger = LoggerFactory.getLogger(PixService.class);
 
 
     @Autowired
     private PixRepository pixRepository;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private PixMapper modelMapper;
+
+    @Autowired
+    private PixUtils pixUtils;
 
     @Autowired
     private QueueSender queueSender;
 
+    private String mensagem;
+
    
-    public PixDTO criarPix(PixDTO pixDTO) {
+    public PixWrapperDTO<PixResponseDTO> criarPix(PixRequestDTO pixDTO) {
 
-        // Verificar se a data do pagamento é futura ou atual
-        if (pixDTO.getDataPagamento().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("A data do pagamento não pode ser no passado.");
-        }
-
-        // verificar o tipo de chave pix e colocar qual é na propriedade tipo de chave
-
-        // Verificar se já existe um Pix com as mesmas condições
         boolean pixExistente = pixRepository.existsByValorAndDataPagamentoAndDestinoPix_ChavePix(
                 pixDTO.getValor(), pixDTO.getDataPagamento(), pixDTO.getChavePix());
-
-                //criar variavel mensagem
-
                 if (pixExistente) {
-                    logger.warn("Já existe um Pix com o mesmo valor, data e destino.");
+                    mensagem = "AVISO:Já existe um Pix com o mesmo valor, data e destino.";
                 }
 
-        // Definir o status do Pix com base na data de pagamento
-        StatusPix status;
-        if (pixDTO.getDataPagamento().isEqual(LocalDate.now())) {
-            status = StatusPix.EFETUADO;
-        } else {
-            status = StatusPix.AGENDADO;
-        }
+        Pix pix = modelMapper.mapToCreateEntity(pixDTO);
 
-        // // Criar o objeto Pix a ser salvo no banco de dados
-        // Pix pix = new Pix();
-        // pix.setValor(pixDTO.getValor());
-        // pix.setDataPagamento(pixDTO.getDataPagamento());
-        // pix.setDestinoPix()
-        // pix.setStatus(status);
-        // pix.setRecorrencia(pixDTO.getRecorrencia().orElse(null));
+        Status status = pixUtils.definirStatus(pixDTO.getDataPagamento());
+        pix.setStatus(status);
+        pix.setDataInclusao(LocalDate.now());
+        pix.getDestinoPix().setTipoChavePix(pixUtils.verificarTipoChavePix(pixDTO.getChavePix()));
+       
+        pix = pixRepository.save(pix);
 
-        // Salvar o Pix no banco de dados
+
+        queueSender.send("Pix criado com sucesso.");
+        return (mensagem != null && !mensagem.isEmpty()) ? 
+        new PixWrapperDTO<PixResponseDTO>(modelMapper.mapToDTO(pix), mensagem) : 
+        new PixWrapperDTO<PixResponseDTO>(modelMapper.mapToDTO(pix));
         
 
-        Pix pix = modelMapper.map(pixDTO, Pix.class);
-        pix = pixRepository.save(pix);
-        queueSender.send("test message");
-        return modelMapper.map(pix, PixDTO.class);
     }
     
-    public PixDTO buscarPix(Long id) {
+    public PixWrapperDTO<PixResponseDTO> buscarPix(Long id) {
         Pix pix = pixRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pix não encontrado"));
-        return modelMapper.map(pix, PixDTO.class);
+                .orElseThrow(() -> new PixNotFoundException("Pix não encontrado"));
+                return new PixWrapperDTO<PixResponseDTO>(modelMapper.mapToDTO(pix));
     }
 
-    public List<PixDTO> buscarPixs(StatusPix status) {
-    List<Pix> pixList;
+    
+    public PixWrapperDTO<List<PixResponseDTO>> buscarPixs(Status status) {
+        List<Pix> pixList = status != null ? pixRepository.findByStatus(status) : pixRepository.findAll();
 
-    if (status != null)
-        pixList = pixRepository.findByStatus(status);
-    // if ("EFETUADO".equals(status)) {
-    //     pixList = pixRepository.findByStatus(StatusPix.EFETUADO);
-    // } else if ("AGENDADO".equals(status)) {
-    //     pixList = pixRepository.findByStatus(StatusPix.AGENDADO);
-    else {
-        pixList = pixRepository.findAll();
+         List<PixResponseDTO> pixResponseList = modelMapper.mapPixListToDTOs(pixList);
+
+    return new PixWrapperDTO<>(pixResponseList);
     }
-    return pixList.stream()
-    .map(pix -> modelMapper.map(pix, PixDTO.class))
-    .collect(Collectors.toList());
-}
+    
+
+    public PixWrapperDTO<PixResponseDTO> atualizarPix(Long id, PixRequestDTO pixDTO) {
+        Pix pix = pixRepository.findById(id).orElseThrow(() -> new PixNotFoundException("Pix não encontrado."));
 
 
-    public PixDTO atualizarPix(Long id, PixDTO pixDTO) {
-        // Implementar a lógica para atualizar um Pix
-        return null;
+        if (pix.getStatus() != Status.AGENDADO) {
+            throw new PixNotFoundException("Nenhum pix atualizar encontrado.");
+        }
+
+
+        Status status = pixUtils.definirStatus(pixDTO.getDataPagamento());
+        
+
+        pix = modelMapper.mapToUpdateEntity(pixDTO, pix);
+
+        pix.setStatus(status);
+        pix.getDestinoPix().setTipoChavePix(pixUtils.verificarTipoChavePix(pixDTO.getChavePix()));
+
+
+        pix = pixRepository.save(pix);
+        queueSender.send("Pix atualizado com sucesso.");
+        return (mensagem != null && !mensagem.isEmpty()) ? 
+        new PixWrapperDTO<PixResponseDTO>(modelMapper.mapToDTO(pix), mensagem) : 
+        new PixWrapperDTO<PixResponseDTO>(modelMapper.mapToDTO(pix));
+
     }
 
     public void deletarPix(Long id) {
-        // Implementar a lógica para deletar um Pix
+        Pix pix = pixRepository.findById(id).orElse(null);
+        if (pix != null && pix.getStatus() == Status.AGENDADO) {
+            pix.setStatus(Status.CANCELADO);
+            pixRepository.save(pix); 
+            queueSender.send("Pix cancelado com sucesso");
+        } else {
+            throw new PixNotFoundException("Nenhum pix encontrado.");
+        }
     }
 
 }
