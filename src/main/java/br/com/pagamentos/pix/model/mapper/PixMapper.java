@@ -19,53 +19,34 @@ import org.springframework.stereotype.Component;
 public class PixMapper {
 
     public Pix mapToCreateEntity(PixRequestDTO pixDTO) {
-        Pix pix = new Pix();
-        pix.setDataPagamento(pixDTO.getDataPagamento());
-        pix.setValor(pixDTO.getValor());
-        pix.setDescricao(pixDTO.getDescricao());
-        pix.setRecorrencia(mapToRecorrencia(pixDTO));
-        pix.setDestinoPix(mapToDestino(pixDTO));
-        return pix;
+       return Pix.builder().dataPagamento(pixDTO.getDataPagamento()).valor(pixDTO.getValor()).descricao(pixDTO.getDescricao()).recorrencia(mapToRecorrencia(pixDTO)).destinoPix(mapToDestino(pixDTO)).build();
+       
     }
 
     public Pix mapToUpdateEntity(PixRequestDTO pixDTO, Pix pix) {
         
-        pix.setDataPagamento(pixDTO.getDataPagamento());
-        pix.setValor(pixDTO.getValor());
-        pix.setDescricao(pixDTO.getDescricao());
-        pix.setRecorrencia(mapToRecorrencia(pixDTO));
-        pix.setDestinoPix(mapToDestino(pixDTO));
-        return pix;
+        return Pix.builder().dataPagamento(pixDTO.getDataPagamento()).valor(pixDTO.getValor()).descricao(pixDTO.getDescricao()).recorrencia(mapToRecorrencia(pixDTO)).destinoPix(mapToDestino(pixDTO)).build();
+
     }
 
 
     public RecorrenciaPix mapToRecorrencia(PixRequestDTO pixDTO) {
-        RecorrenciaPix recorrencia = new RecorrenciaPix();
-        recorrencia.setDataFinal(pixDTO.getDataFinal());
-        recorrencia.setFrequencia(pixDTO.getFrequencia());
-        return recorrencia;
-    }
+       return RecorrenciaPix.builder().dataFinal(pixDTO.getDataFinal()).frequencia(pixDTO.getFrequencia()).build();}
+        
 
     public Destino mapToDestino(PixRequestDTO pixDTO) {
-        Destino destino = new Destino();
-        destino.setChavePix(pixDTO.getChavePix());
-        return destino;
+
+        return Destino.builder().chavePix(pixDTO.getChavePix()).build(); 
         
     }
 
 
 
     public PixResponseDTO mapToDTO(Pix pix) {
-        PixResponseDTO pixDTO = new PixResponseDTO();
-        pixDTO.setStatus(pix.getStatus());
-        pixDTO.setDataInclusao(pix.getDataInclusao());
-        pixDTO.setDataPagamento(pix.getDataPagamento());
-        pixDTO.setValor(pix.getValor());
-        pixDTO.setDescricao(pix.getDescricao());
-        pixDTO.setDataFinal(Optional.ofNullable(pix.getRecorrencia()).map(RecorrenciaPix::getDataFinal).orElse(null));
-        pixDTO.setFrequencia(Optional.ofNullable(pix.getRecorrencia()).map(RecorrenciaPix::getFrequencia).orElse(null));
-        pixDTO.setChavePix(pix.getDestinoPix().getChavePix());
-        return pixDTO;
+
+        
+        return PixResponseDTO.builder().status(pix.getStatus()).dataInclusao(pix.getDataInclusao()).dataPagamento(pix.getDataPagamento()).valor(pix.getValor()).descricao(pix.getDescricao()).dataFinal(Optional.ofNullable(pix.getRecorrencia()).map(RecorrenciaPix::getDataFinal).orElse(null)).frequencia(Optional.ofNullable(pix.getRecorrencia()).map(RecorrenciaPix::getFrequencia).orElse(null)).chavePix(pix.getDestinoPix().getChavePix()).build();
+       
     }
 
     public List<PixResponseDTO> mapPixListToDTOs(List<Pix> pixList) {

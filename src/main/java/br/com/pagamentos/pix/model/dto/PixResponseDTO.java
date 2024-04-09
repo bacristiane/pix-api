@@ -3,9 +3,11 @@ package br.com.pagamentos.pix.model.dto;
 import java.time.LocalDate;
 import br.com.pagamentos.pix.model.constant.FrequenciaRecorrencia;
 import br.com.pagamentos.pix.model.constant.Status;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class PixResponseDTO {
 
     private Status status;

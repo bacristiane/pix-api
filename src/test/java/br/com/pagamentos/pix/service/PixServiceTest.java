@@ -11,13 +11,10 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+
 
 import br.com.pagamentos.pix.components.QueueSender;
 import br.com.pagamentos.pix.model.Destino;
@@ -58,8 +55,10 @@ public class PixServiceTest {
 
     @Test
     public void testCriarPix() {
+
+
         // Mock data
-        PixRequestDTO requestDTO = new PixRequestDTO();
+        PixRequestDTO.builder().
         requestDTO.setValor(100.0);
         requestDTO.setDataPagamento(LocalDate.now());
         requestDTO.setChavePix("barbara@email.com");
@@ -150,14 +149,13 @@ public class PixServiceTest {
     @Test
     public void testAtualizarPix() {
         // Mock data
-        
-
         Long id = 1L;
         PixRequestDTO requestDTO = new PixRequestDTO();
         requestDTO.setDataPagamento(LocalDate.now());
         Pix pix = new Pix();
-        pix.setDestinoPix(pixMapper.mapToDestino(requestDTO));
-
+        Destino destino = new Destino();
+        destino.setTipoChavePix(TipoChave.EMAIL);
+        pix.setDestinoPix(destino);
         pix.setStatus(Status.AGENDADO);
         PixResponseDTO responseDTO = new PixResponseDTO();
         PixWrapperDTO<PixResponseDTO> expectedResponse = new PixWrapperDTO<>(responseDTO);
@@ -179,8 +177,19 @@ public class PixServiceTest {
         // Assertions
         assertEquals(expectedResponse, result);
     }
+private PixRequestDTO requestDTO(){
+        return PixRequestDTO.builder().
+        requestDTO.setValor(100.0);
+        requestDTO.setDataPagamento(LocalDate.now()).
+};
 
-
+private Pix pix(){
+    return PixRequestDTO.builder().
+    requestDTO.setValor(100.0);
+    requestDTO.setDataPagamento(LocalDate.now()).
+};
+    
+ 
     
 }
 
