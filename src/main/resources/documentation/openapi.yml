@@ -1,0 +1,215 @@
+openapi: 3.0.1
+info:
+  title: Pix CRUD API
+  description: Api para simular um CRUD Pix
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Local server
+paths:
+  /v1/health:
+    get:
+      summary: Verificar se a API está funcionando
+      operationId: verificarAPI
+      responses:
+        '200':
+          description: ApiUp
+          content:
+            application/json:
+              schema:
+                  type: string
+                  example: "Application Running"
+  /v1/pix:
+    post:
+      summary: Criar um novo Pix
+      operationId: criarPix
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PixRequestDTO'
+      responses:
+        '201':
+          description: Pix criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PixWrapperDTO'
+        '400':
+          description: Inputs inválidos
+    get:
+      summary: Buscar todos os Pixs
+      operationId: buscarPixs
+      responses:
+        '200':
+          description: Pixs encontrados
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/PixWrapperDTO'
+  /v1/pix/{id}:
+    get:
+      summary: Buscar um Pix por id
+      operationId: buscarPix
+      parameters:
+        - name: id
+          in: path
+          description: O id do Pix
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Pix encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PixWrapperDTO'
+        '404':
+          description: Pix não encontrado
+    put:
+      summary: Atualizar o Pix por id
+      operationId: atualizarPix
+      parameters:
+        - name: id
+          in: path
+          description: O id do Pix
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PixRequestDTO'
+      responses:
+        '200':
+          description: Pix atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PixWrapperDTO'
+        '400':
+          description: Inputs inválidos
+    patch:
+      summary: Atualizar o Pix por id
+      operationId: atualizarPix
+      parameters:
+        - name: id
+          in: path
+          description: O id do Pix
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PixRequestDTO'
+      responses:
+        '200':
+          description: Pix atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PixWrapperDTO'
+        '400':
+          description: Inputs inválidos
+    delete:
+      summary: Deletar o Pix por id
+      operationId: deletarPix
+      parameters:
+        - name: id
+          in: path
+          description: O id do Pix
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Pix cancelado
+        '404':
+          description: Pix  não encontrado
+components:
+  schemas:
+    PixRequestDTO:
+      type: object
+      properties:
+        dataPagamento:
+          type: string
+          example: 10/04/2024
+        valor:
+          type: number
+          example: 100.50
+        frequencia:
+          $ref: '#/components/schemas/FrequenciaRecorrencia'
+        dataFinal:
+          example: 10/05/2024
+        descricao:
+          type: string
+          example: pagamento x
+        chavePix:
+          type: string
+          example: email@email.com
+      required:
+        - dataPagamento
+        - valor
+        - chavePix
+    PixResponseDTO:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        dataPagamento:
+          type: string
+          example: 10/04/2024
+        valor:
+          type: number
+          example: 100.50
+        frequencia:
+          $ref: '#/components/schemas/FrequenciaRecorrencia'
+        dataFinal:
+          type: string
+          example: 10/05/2024
+        descricao:
+          type: string
+          example: pagamento x
+        chavePix:
+          type: string
+          example: email@email.com
+     
+    PixWrapperDTO:
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/PixResponseDTO'
+            - type: array
+              items:
+                $ref: '#/components/schemas/PixResponseDTO'
+        message:
+          type: string
+      required:
+        - data
+
+    
+          
+    Status:
+      type: string
+      enum:
+        - AGENDADO
+        - EFETUADO
+        - CANCELADO
+        
+    FrequenciaRecorrencia:
+      type: string
+      enum:
+        - SEMANAL
+        - MENSAL
+        - TRIMESTRAL
+        - SEMESTRAL
+
+   
