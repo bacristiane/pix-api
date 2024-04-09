@@ -1,0 +1,18 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="2" author="Barbara">
+        <sql>INSERT INTO pix (status, data_inclusao, data_pagamento, valor, descricao, data_final, frequencia, chave_pix, tipo_chave_pix) VALUES ('EFETUADO', '2023-04-01', '2023-04-01', 100.00, 'Pagamento 1', '2023-04-01', 'SEMANAL', '123456789', 'CPF');</sql>
+    </changeSet>
+
+    <changeSet id="2" author="you">
+        <sql>INSERT INTO pix (status, data_inclusao, data_pagamento, valor, descricao, data_final, frequencia, chave_pix, tipo_chave_pix) VALUES ('AGENDADO', '2023-04-02', '2023-04-03', 150.00, 'Pagamento 2', '2023-04-03', 'MENSAL', 'teste@example.com', 'EMAIL');</sql>
+    </changeSet>
+
+    <changeSet id="3" author="you">
+        <sql>INSERT INTO pix (status, data_inclusao, data_pagamento, valor, descricao, data_final, frequencia, chave_pix, tipo_chave_pix) VALUES ('CANCELADO', '2023-04-03', '2023-04-03', 200.00, 'Pagamento 3', '2023-04-03', 'SEMANAL', '987654321', 'TELEFONE');</sql>
+    </changeSet>
+
+</databaseChangeLog>
