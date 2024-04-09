@@ -12,6 +12,8 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+import br.com.pagamentos.pix.model.constant.Status;
+
 @Data
 @Entity
 public class Pix {
@@ -21,8 +23,9 @@ public class Pix {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private StatusPix status;
+    private Status status;
 
+    
     private LocalDate dataInclusao;
 
     private LocalDate dataPagamento;
@@ -35,6 +38,6 @@ public class Pix {
     private RecorrenciaPix recorrencia;
 
     @Embedded
-    private DestinoPix destinoPix;
+    private Destino destinoPix;
 
 }

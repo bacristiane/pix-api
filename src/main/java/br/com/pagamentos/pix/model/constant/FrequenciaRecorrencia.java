@@ -1,4 +1,4 @@
-package br.com.pagamentos.pix.model;
+package br.com.pagamentos.pix.model.constant;
 
 public enum FrequenciaRecorrencia {
     SEMANAL,
