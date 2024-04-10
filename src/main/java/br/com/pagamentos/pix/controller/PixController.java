@@ -59,7 +59,7 @@ public ResponseEntity<PixWrapperDTO<List<PixResponseDTO>>> buscarPixs(@RequestPa
 
     @PatchMapping("/{id}")
     public ResponseEntity<PixWrapperDTO<PixResponseDTO>> atualizarPixParcialmente(@PathVariable Long id, @RequestBody @Valid  PixRequestDTO PixDTO) {
-        PixWrapperDTO<PixResponseDTO> response = pixService.atualizarPix(id, PixDTO);
+        PixWrapperDTO<PixResponseDTO> response = pixService.atualizarParcialmentePix(id, PixDTO);
         return ResponseEntity.ok(response);
     }
 

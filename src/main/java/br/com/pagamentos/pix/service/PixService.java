@@ -104,6 +104,30 @@ public class PixService {
 
     }
 
+    public PixWrapperDTO<PixResponseDTO> atualizarParcialmentePix(Long id, PixRequestDTO pixDTO) {
+        Pix pix = pixRepository.findById(id).orElseThrow(() -> new PixNotFoundException("Pix não encontrado."));
+
+
+        if (pix.getStatus() != Status.AGENDADO) {
+            throw new PixNotFoundException("Nenhum pix agendado para atualizar.");
+        }
+
+
+        Status status = pixUtils.definirStatus(pixDTO.getDataPagamento());
+        
+
+        pix = modelMapper.mapToUpdateEntity(pixDTO, pix);
+
+        pix.setStatus(status);
+        pix.getDestinoPix().setTipoChavePix(pixUtils.verificarTipoChavePix(pixDTO.getChavePix()));
+
+
+        pix = pixRepository.save(pix);
+        queueSender.send("Pix atualizado com sucesso.");
+        return new PixWrapperDTO<PixResponseDTO>(modelMapper.mapToDTO(pix));
+
+    }
+
     public PixWrapperDTO<PixResponseDTO> deletarPix(Long id) {
         Pix pix = pixRepository.findById(id).orElseThrow(() -> new PixNotFoundException("Pix não encontrado."));
         if (pix != null && pix.getStatus() == Status.AGENDADO) {
