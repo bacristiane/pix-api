@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-@Builder
 @Embeddable
 public class Destino {
 

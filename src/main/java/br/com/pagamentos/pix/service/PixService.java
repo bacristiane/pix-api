@@ -5,8 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.time.LocalDate;
-import br.com.pagamentos.pix.components.QueueSender;
+
 import br.com.pagamentos.pix.exceptions.PixNotFoundException;
+import br.com.pagamentos.pix.messaging.QueueSender;
 import br.com.pagamentos.pix.model.Pix;
 import br.com.pagamentos.pix.model.constant.Status;
 import br.com.pagamentos.pix.model.dto.PixRequestDTO;
@@ -32,10 +33,12 @@ public class PixService {
     @Autowired
     private QueueSender queueSender;
 
-    private String mensagem;
+    
 
    
     public PixWrapperDTO<PixResponseDTO> criarPix(PixRequestDTO pixDTO) {
+
+     String mensagem = "";
 
         boolean pixExistente = pixRepository.existsByValorAndDataPagamentoAndDestinoPix_ChavePix(
                 pixDTO.getValor(), pixDTO.getDataPagamento(), pixDTO.getChavePix());
@@ -82,7 +85,7 @@ public class PixService {
 
 
         if (pix.getStatus() != Status.AGENDADO) {
-            throw new PixNotFoundException("Nenhum pix atualizar encontrado.");
+            throw new PixNotFoundException("Nenhum pix agendado para atualizar.");
         }
 
 
@@ -97,20 +100,18 @@ public class PixService {
 
         pix = pixRepository.save(pix);
         queueSender.send("Pix atualizado com sucesso.");
-        return (mensagem != null && !mensagem.isEmpty()) ? 
-        new PixWrapperDTO<PixResponseDTO>(modelMapper.mapToDTO(pix), mensagem) : 
-        new PixWrapperDTO<PixResponseDTO>(modelMapper.mapToDTO(pix));
+        return new PixWrapperDTO<PixResponseDTO>(modelMapper.mapToDTO(pix));
 
     }
 
     public void deletarPix(Long id) {
-        Pix pix = pixRepository.findById(id).orElse(null);
+        Pix pix = pixRepository.findById(id).orElseThrow(() -> new PixNotFoundException("Pix não encontrado."));
         if (pix != null && pix.getStatus() == Status.AGENDADO) {
             pix.setStatus(Status.CANCELADO);
             pixRepository.save(pix); 
             queueSender.send("Pix cancelado com sucesso");
         } else {
-            throw new PixNotFoundException("Nenhum pix encontrado.");
+            throw new PixNotFoundException("Nenhum pix agendado para cancelar.");
         }
     }
 

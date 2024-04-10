@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import br.com.pagamentos.pix.model.constant.Status;
 
 @Data
-@Builder
 @Entity
 public class Pix {
 
