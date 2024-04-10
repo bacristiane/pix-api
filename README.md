@@ -29,17 +29,12 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 
 4. Após os contêineres estarem em execução, execute o seguinte comando para popular o banco de dados:
 
-    ```shell
-    4. Após os contêineres estarem em execução, execute o seguinte comando para iniciar a aplicação:
 
     ```shell
-    ./mvnw spring-boot:run
+    mvn liquibase:update
     ```
 
-    Isso irá compilar e executar a aplicação Java.
-    ```
-
-    Isso irá compilar e executar a aplicação Java.
+  
 
 5. Após os contêineres estarem em execução, execute o seguinte comando para iniciar a aplicação:
 
