@@ -14,5 +14,10 @@
     <changeSet id="3" author="you">
         <sql>INSERT INTO pix (status, data_inclusao, data_pagamento, valor, descricao, data_final, frequencia, chave_pix, tipo_chave_pix) VALUES ('CANCELADO', '2023-04-03', '2023-04-03', 200.00, 'Pagamento 3', '2023-04-03', 'SEMANAL', '987654321', 'TELEFONE');</sql>
     </changeSet>
+    <changeSet id="clear_databasechangelog" author="Barbara">
+        <sql>
+            DELETE FROM databasechangelog;
+        </sql>
+    </changeSet>
 
 </databaseChangeLog>
