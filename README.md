@@ -27,22 +27,21 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 
     Isso irá baixar as imagens necessárias e iniciar os contêineres.
 
-4. Após os contêineres estarem em execução, execute o seguinte comando para popular o banco de dados:
 
-
-    ```shell
-    mvn liquibase:update
-    ```
-
-  
-
-5. Após os contêineres estarem em execução, execute o seguinte comando para iniciar a aplicação:
+4. Após os contêineres estarem em execução, execute o seguinte comando para iniciar a aplicação:
 
     ```shell
     ./mvnw spring-boot:run
     ```
 
     Isso irá compilar e executar a aplicação Java.
+
+5. Após os contêineres estarem em execução, execute o seguinte comando para popular o banco de dados:
+
+
+    ```shell
+    mvn liquibase:update
+    ```
 
 6. Para verificar se a aplicação está rodando, acesse em seu navegador através do seguinte endereço:
 
@@ -51,5 +50,5 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
     ```
     Na pasta resources/documentation você encontrará a collection do Postamn para testar a aplicação toda.
 
-    Agora você pode interagir com a aplicação PIX.
+    Agora você pode interagir com a aplicação PIX!
 
