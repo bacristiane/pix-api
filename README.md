@@ -18,10 +18,6 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 3. Execute o seguinte comando para iniciar os contêineres Docker:
 
     ```shell
-    docker build
-    ```
-
-    ```shell
     docker-compose up -d
     ```
 
