@@ -7,7 +7,7 @@ Este é um guia rápido sobre como rodar a aplicação localmente.
 Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 
 - Docker
-- Java Development Kit (JDK)
+- Java Development Kit (JDK) Versão 17
 
 ## Passos para executar a aplicação
 
