@@ -1,6 +1,6 @@
 # Aplicação PIX
 
-Este é um guia rápido sobre como rodar a aplicação XYZ localmente.
+Este é um guia rápido sobre como rodar a aplicação localmente.
 
 ## Pré-requisitos
 
@@ -27,7 +27,21 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 
     Isso irá baixar as imagens necessárias e iniciar os contêineres.
 
-4. Após os contêineres estarem em execução, execute o seguinte comando para iniciar a aplicação:
+4. Após os contêineres estarem em execução, execute o seguinte comando para popular o banco de dados:
+
+    ```shell
+    4. Após os contêineres estarem em execução, execute o seguinte comando para iniciar a aplicação:
+
+    ```shell
+    ./mvnw spring-boot:run
+    ```
+
+    Isso irá compilar e executar a aplicação Java.
+    ```
+
+    Isso irá compilar e executar a aplicação Java.
+
+5. Após os contêineres estarem em execução, execute o seguinte comando para iniciar a aplicação:
 
     ```shell
     ./mvnw spring-boot:run
@@ -35,7 +49,7 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 
     Isso irá compilar e executar a aplicação Java.
 
-5. Acesse a aplicação em seu navegador através do seguinte endereço:
+6. Acesse a aplicação em seu navegador através do seguinte endereço:
 
     ```
     http://localhost:8080

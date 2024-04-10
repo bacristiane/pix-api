@@ -19,16 +19,16 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-  api:
-    container_name: pix-api
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  # api:
+  #   container_name: pix-api
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 volumes:
   pgdata:
