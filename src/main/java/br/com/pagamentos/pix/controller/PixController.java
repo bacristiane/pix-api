@@ -64,9 +64,9 @@ public ResponseEntity<PixWrapperDTO<List<PixResponseDTO>>> buscarPixs(@RequestPa
     }
 
     @DeleteMapping("/{id}")
-    public void deletarPix(@PathVariable Long id) {
-        
-            pixService.deletarPix(id);
+    public ResponseEntity<PixWrapperDTO<PixResponseDTO>> deletarPix(@PathVariable Long id) {
+        PixWrapperDTO<PixResponseDTO> response = pixService.deletarPix(id);
+            return ResponseEntity.ok(response);
             
     }
 

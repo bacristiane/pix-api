@@ -104,12 +104,13 @@ public class PixService {
 
     }
 
-    public void deletarPix(Long id) {
+    public PixWrapperDTO<PixResponseDTO> deletarPix(Long id) {
         Pix pix = pixRepository.findById(id).orElseThrow(() -> new PixNotFoundException("Pix não encontrado."));
         if (pix != null && pix.getStatus() == Status.AGENDADO) {
             pix.setStatus(Status.CANCELADO);
             pixRepository.save(pix); 
             queueSender.send("Pix cancelado com sucesso");
+            return new PixWrapperDTO<PixResponseDTO>(modelMapper.mapToDTO(pix));
         } else {
             throw new PixNotFoundException("Nenhum pix agendado para cancelar.");
         }

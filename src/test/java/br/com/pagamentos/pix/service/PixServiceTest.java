@@ -105,8 +105,9 @@ public class PixServiceTest {
     public void whenCallBuscarPix_shouldReturnPixWrapperDTOWithtPix() {
         // Mock data
         Long id = 1L;
-        Pix pix = new Pix();
-        PixResponseDTO responseDTO = new PixResponseDTO();
+        PixRequestDTO requestDTO = requestDTO();
+        Pix pix = pix(requestDTO);
+        PixResponseDTO responseDTO = responseDTO(pix);
         PixWrapperDTO<PixResponseDTO> expectedResponse = new PixWrapperDTO<>(responseDTO);
 
         // Mock behavior
@@ -123,7 +124,7 @@ public class PixServiceTest {
     @Test
     public void whenCallBuscarPixs_shouldReturnPixWrapperDTOWithtListOfPixs() {
         // Mock data
-        Status status = Status.CANCELADO;
+        Status status = Status.AGENDADO;
         List<Pix> pixList = new ArrayList<>();
         PixResponseDTO responseDTO = new PixResponseDTO();
         List<PixResponseDTO> responseList = new ArrayList<>();
@@ -132,6 +133,7 @@ public class PixServiceTest {
 
         // Mock behavior
         when(pixRepository.findByStatus(status)).thenReturn(pixList);
+        when(pixRepository.findAll()).thenReturn(pixList);
         when(pixMapper.mapPixListToDTOs(pixList)).thenReturn(responseList);
 
         // Test
@@ -146,11 +148,9 @@ public class PixServiceTest {
         // Mock data
         Long id = 1L;
         PixRequestDTO requestDTO = requestDTO();
+        requestDTO.setValor(500);
         requestDTO.setDataPagamento(LocalDate.now());
         Pix pix = pix(requestDTO);
-        Destino destino = new Destino();
-        destino.setTipoChavePix(TipoChave.EMAIL);
-        pix.setDestinoPix(destino);
         pix.setStatus(Status.AGENDADO);
         PixResponseDTO responseDTO = responseDTO(pix);
         PixWrapperDTO<PixResponseDTO> expectedResponse = new PixWrapperDTO<>(responseDTO);
@@ -171,27 +171,32 @@ public class PixServiceTest {
 
         // Assertions
         assertEquals(expectedResponse, result);
+        verify(queueSender, times(1)).send(anyString());
     }
 
     @Test
     public void whenCallDeletarPix_shouldBeVoid() {
         // Mock data
-        Status status = Status.CANCELADO;
-        List<Pix> pixList = new ArrayList<>();
-        PixResponseDTO responseDTO = new PixResponseDTO();
-        List<PixResponseDTO> responseList = new ArrayList<>();
-        responseList.add(responseDTO);
-        PixWrapperDTO<List<PixResponseDTO>> expectedResponse = new PixWrapperDTO<>(responseList);
+        Long id = 1L;
+        PixRequestDTO requestDTO = requestDTO();
+        Pix pix = pix(requestDTO);
+        pix.setStatus(Status.AGENDADO);
+        PixResponseDTO responseDTO = responseDTO(pix);
+        responseDTO.setStatus(Status.CANCELADO);
+        PixWrapperDTO<PixResponseDTO> expectedResponse = new PixWrapperDTO<>(responseDTO);
 
         // Mock behavior
-        when(pixRepository.findByStatus(status)).thenReturn(pixList);
-        when(pixMapper.mapPixListToDTOs(pixList)).thenReturn(responseList);
+        when(pixRepository.findById(id)).thenReturn(Optional.of(pix));
+        when(pixRepository.save(pix)).thenReturn(pix);
+        when(pixMapper.mapToDTO(pix)).thenReturn(responseDTO);
+
 
         // Test
-        PixWrapperDTO<List<PixResponseDTO>> result = pixService.buscarPixs(status);
+        PixWrapperDTO<PixResponseDTO> result = pixService.deletarPix(id);
 
         // Assertions
         assertEquals(expectedResponse, result);
+        verify(queueSender, times(1)).send(anyString());
     }
 private PixRequestDTO requestDTO(){
 
