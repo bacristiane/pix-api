@@ -124,6 +124,25 @@ public class PixControllerTest {
     }
 
     @Test
+    public void whenCallAtualizarPixParcialmente_shouldReturnStatus200() throws Exception {
+        PixRequestDTO mockRequestDto = requestDTO();
+        Pix mockPix = mockPix();
+        mockRequestDto.setValor(200.0);
+        mockPix.setStatus(Status.AGENDADO);
+
+        when(pixRepository.findById(1L)).thenReturn(Optional.of(mockPix));
+        when(pixRepository.save(any())).thenReturn(mockPix);
+        
+       String jsonRequest = objectMapper.writeValueAsString(mockRequestDto);
+
+                
+                mockMvc.perform(patch("/api/v1/pix/{id}", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonRequest))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     public void whenCallDeletarPix_shouldReturnStatus200() throws Exception {
         Pix mockPix = mockPix();
         mockPix.setStatus(Status.AGENDADO);

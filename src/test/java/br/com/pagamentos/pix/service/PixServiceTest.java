@@ -175,6 +175,37 @@ public class PixServiceTest {
     }
 
     @Test
+    public void whenCallAtualizarPixParcialmente_shouldReturnPixWrapperDTOWithtPix() {
+        // Mock data
+        Long id = 1L;
+        PixRequestDTO requestDTO = requestDTO();
+        requestDTO.setValor(500);
+        requestDTO.setDataPagamento(LocalDate.now());
+        Pix pix = pix(requestDTO);
+        pix.setStatus(Status.AGENDADO);
+        PixResponseDTO responseDTO = responseDTO(pix);
+        PixWrapperDTO<PixResponseDTO> expectedResponse = new PixWrapperDTO<>(responseDTO);
+  
+
+        // Mock behavior
+       
+        when(pixRepository.findById(id)).thenReturn(Optional.of(pix));
+        when(pixUtils.definirStatus(requestDTO.getDataPagamento())).thenReturn(Status.EFETUADO);
+        when(pixMapper.mapToUpdateEntity(requestDTO, pix)).thenReturn(pix);
+        when(pixUtils.verificarTipoChavePix(requestDTO.getChavePix())).thenReturn(TipoChave.EMAIL);
+        when(pixMapper.mapToCreateEntity(requestDTO)).thenReturn(pix);
+        when(pixRepository.save(pix)).thenReturn(pix);
+        when(pixMapper.mapToDTO(pix)).thenReturn(responseDTO);
+
+        // Test
+        PixWrapperDTO<PixResponseDTO> result = pixService.atualizarParcialmentePix(id, requestDTO);
+
+        // Assertions
+        assertEquals(expectedResponse, result);
+        verify(queueSender, times(1)).send(anyString());
+    }
+
+    @Test
     public void whenCallDeletarPix_shouldBeVoid() {
         // Mock data
         Long id = 1L;
