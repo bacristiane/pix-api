@@ -49,12 +49,12 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 
     Isso irá compilar e executar a aplicação Java.
 
-6. Acesse a aplicação em seu navegador através do seguinte endereço:
+6. Para verificar se a aplicação está rodando, acesse em seu navegador através do seguinte endereço:
 
     ```
-    http://localhost:8080
+    http://localhost:8080/api/v1/health
     ```
+    Na pasta resources/documentation você encontrará a collection do Postamn para testar a aplicação toda.
 
     Agora você pode interagir com a aplicação PIX.
-
 
