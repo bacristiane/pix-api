@@ -15,10 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-
-import br.com.pagamentos.pix.components.QueueSender;
+import br.com.pagamentos.pix.messaging.QueueSender;
 import br.com.pagamentos.pix.model.Destino;
 import br.com.pagamentos.pix.model.Pix;
+import br.com.pagamentos.pix.model.RecorrenciaPix;
 import br.com.pagamentos.pix.model.constant.FrequenciaRecorrencia;
 import br.com.pagamentos.pix.model.constant.Status;
 import br.com.pagamentos.pix.model.constant.TipoChave;
@@ -54,47 +54,18 @@ public class PixServiceTest {
     }
 
     @Test
-    public void testCriarPix() {
-
+    public void whenCallCriarPix_shouldReturnPixWrapperDTOWithoutMessage() {
 
         // Mock data
-        PixRequestDTO.builder().
-        requestDTO.setValor(100.0);
-        requestDTO.setDataPagamento(LocalDate.now());
-        requestDTO.setChavePix("barbara@email.com");
-        requestDTO.setDescricao("Pagamento de aluguel");
-        requestDTO.setDataFinal(LocalDate.now().plusDays(30));
-        requestDTO.setFrequencia(FrequenciaRecorrencia.MENSAL);
-        
-        Pix pix = new Pix();
-
-        pix.setValor(requestDTO.getValor());
-        pix.setDataPagamento(requestDTO.getDataPagamento());
-        pix.setStatus(Status.EFETUADO);
-        pix.setDataInclusao(LocalDate.now());
-        pix.setDescricao(requestDTO.getDescricao());
-        pix.setRecorrencia(pixMapper.mapToRecorrencia(requestDTO));
-        pix.setDestinoPix(pixMapper.mapToDestino(requestDTO));
-        
-        
-
-        PixResponseDTO responseDTO = new PixResponseDTO();
-
-        responseDTO.setValor(pix.getValor());
-        responseDTO.setDataPagamento(pix.getDataPagamento());
-        responseDTO.setStatus(pix.getStatus());
-        responseDTO.setDataInclusao(pix.getDataInclusao());
-        responseDTO.setChavePix(requestDTO.getChavePix());
-
-
+        PixRequestDTO requestDTO = requestDTO();
+        Pix pix = pix(requestDTO);
+        PixResponseDTO responseDTO = responseDTO(pix);
         PixWrapperDTO<PixResponseDTO> expectedResponse = new PixWrapperDTO<>(responseDTO);
 
         // Mock behavior
-        when(pixMapper.mapToCreateEntity(requestDTO)).thenReturn(pix);
+        
         when(pixRepository.existsByValorAndDataPagamentoAndDestinoPix_ChavePix(requestDTO.getValor(), requestDTO.getDataPagamento(), requestDTO.getChavePix())).thenReturn(false);
-        when(pixUtils.verificarTipoChavePix(requestDTO.getChavePix())).thenReturn(TipoChave.EMAIL);
-        when(pixRepository.save(pix)).thenReturn(pix);
-        when(pixMapper.mapToDTO(pix)).thenReturn(responseDTO);
+        when(pixMapper.mapToCreateEntity(requestDTO)).thenReturn(pix);
         when(pixRepository.save(pix)).thenReturn(pix);
         when(pixMapper.mapToDTO(pix)).thenReturn(responseDTO);
 
@@ -106,8 +77,32 @@ public class PixServiceTest {
         verify(queueSender, times(1)).send(anyString());
     }
 
+
     @Test
-    public void testBuscarPix() {
+    public void whenCallCriarPix_shouldReturnPixWrapperDTOWithtMessage() {
+
+        // Mock data
+        PixRequestDTO requestDTO = requestDTO();
+        Pix pix = pix(requestDTO);
+        PixResponseDTO responseDTO = responseDTO(pix);
+        PixWrapperDTO<PixResponseDTO> expectedResponse = new PixWrapperDTO<>(responseDTO, "AVISO:Já existe um Pix com o mesmo valor, data e destino.");
+
+        // Mock behavior
+        when(pixRepository.existsByValorAndDataPagamentoAndDestinoPix_ChavePix(requestDTO.getValor(), requestDTO.getDataPagamento(), requestDTO.getChavePix())).thenReturn(true);
+        when(pixMapper.mapToCreateEntity(requestDTO)).thenReturn(pix);
+        when(pixRepository.save(pix)).thenReturn(pix);
+        when(pixMapper.mapToDTO(pix)).thenReturn(responseDTO);
+      
+        // Test
+        PixWrapperDTO<PixResponseDTO> result = pixService.criarPix(requestDTO);
+
+        // Assertions
+        assertEquals(expectedResponse, result);
+        verify(queueSender, times(1)).send(anyString());
+    }
+
+    @Test
+    public void whenCallBuscarPix_shouldReturnPixWrapperDTOWithtPix() {
         // Mock data
         Long id = 1L;
         Pix pix = new Pix();
@@ -126,7 +121,7 @@ public class PixServiceTest {
     }
 
     @Test
-    public void testBuscarPixs() {
+    public void whenCallBuscarPixs_shouldReturnPixWrapperDTOWithtListOfPixs() {
         // Mock data
         Status status = Status.CANCELADO;
         List<Pix> pixList = new ArrayList<>();
@@ -147,17 +142,17 @@ public class PixServiceTest {
     }
 
     @Test
-    public void testAtualizarPix() {
+    public void whenCallAtualizarPix_shouldReturnPixWrapperDTOWithtPix() {
         // Mock data
         Long id = 1L;
-        PixRequestDTO requestDTO = new PixRequestDTO();
+        PixRequestDTO requestDTO = requestDTO();
         requestDTO.setDataPagamento(LocalDate.now());
-        Pix pix = new Pix();
+        Pix pix = pix(requestDTO);
         Destino destino = new Destino();
         destino.setTipoChavePix(TipoChave.EMAIL);
         pix.setDestinoPix(destino);
         pix.setStatus(Status.AGENDADO);
-        PixResponseDTO responseDTO = new PixResponseDTO();
+        PixResponseDTO responseDTO = responseDTO(pix);
         PixWrapperDTO<PixResponseDTO> expectedResponse = new PixWrapperDTO<>(responseDTO);
   
 
@@ -177,19 +172,72 @@ public class PixServiceTest {
         // Assertions
         assertEquals(expectedResponse, result);
     }
+
+    @Test
+    public void whenCallDeletarPix_shouldBeVoid() {
+        // Mock data
+        Status status = Status.CANCELADO;
+        List<Pix> pixList = new ArrayList<>();
+        PixResponseDTO responseDTO = new PixResponseDTO();
+        List<PixResponseDTO> responseList = new ArrayList<>();
+        responseList.add(responseDTO);
+        PixWrapperDTO<List<PixResponseDTO>> expectedResponse = new PixWrapperDTO<>(responseList);
+
+        // Mock behavior
+        when(pixRepository.findByStatus(status)).thenReturn(pixList);
+        when(pixMapper.mapPixListToDTOs(pixList)).thenReturn(responseList);
+
+        // Test
+        PixWrapperDTO<List<PixResponseDTO>> result = pixService.buscarPixs(status);
+
+        // Assertions
+        assertEquals(expectedResponse, result);
+    }
 private PixRequestDTO requestDTO(){
-        return PixRequestDTO.builder().
-        requestDTO.setValor(100.0);
-        requestDTO.setDataPagamento(LocalDate.now()).
+
+    PixRequestDTO requestDTO = new PixRequestDTO();
+    requestDTO.setValor(100.0);
+    requestDTO.setDataPagamento(LocalDate.now());
+    requestDTO.setChavePix("email@email.com");
+    requestDTO.setDescricao("pagamento pix");
+    requestDTO.setDataFinal(LocalDate.now().plusDays(30));
+    requestDTO.setFrequencia(FrequenciaRecorrencia.MENSAL);
+    return requestDTO;
+        
 };
 
-private Pix pix(){
-    return PixRequestDTO.builder().
-    requestDTO.setValor(100.0);
-    requestDTO.setDataPagamento(LocalDate.now()).
-};
+private Pix pix(PixRequestDTO requestDTO){
+
+    Destino destino = new Destino();
+    destino.setChavePix(requestDTO.getChavePix());
+    destino.setTipoChavePix(TipoChave.EMAIL);
+    RecorrenciaPix recorrencia = new RecorrenciaPix();
+    recorrencia.setDataFinal(requestDTO.getDataFinal());
+    recorrencia.setFrequencia(requestDTO.getFrequencia());
+
+    Pix pix = new Pix();
+    pix.setDataPagamento(requestDTO.getDataPagamento());
+    pix.setValor(requestDTO.getValor());
+    pix.setDescricao(requestDTO.getDescricao());
+    pix.setRecorrencia(recorrencia);
+    pix.setDestinoPix(destino);
+    return pix;
+
+   
+}
+
+
+private PixResponseDTO responseDTO(Pix pix){
+
+    PixResponseDTO responseDTO = new PixResponseDTO();
+    responseDTO.setValor(pix.getValor());
+    responseDTO.setDataPagamento(pix.getDataPagamento());
+    responseDTO.setStatus(pix.getStatus());
+    responseDTO.setDataInclusao(pix.getDataInclusao());
+    responseDTO.setChavePix(pix.getDestinoPix().getChavePix());
+    return responseDTO;
     
- 
-    
+}
+
 }
 
